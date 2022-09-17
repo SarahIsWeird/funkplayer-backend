@@ -17,9 +17,9 @@ router.post('/', async (req, res) => {
         return;
     }
 
-    await db.insertArtist(name);
+    const response = await db.insertArtist(name);
 
-    res.status(204).send();
+    res.status(204).send(response[0]);
 });
 
 router.get('/search', async (req, res) => {

@@ -26,34 +26,32 @@ router.post('/', async (req, res) => {
 
     const info = await db.insertSong(name, artistId);
 
-    logger.info(info);
-
     const proc = spawn('yt-dlp', [
         youtubeLink,
         '--format', 'bestaudio',
         '--output', `data/${info[0].id}.%(ext)s`,
-        '--print', 'filename',
-        '--print', 'duration',
+        '--print', 'filename: %(filename)s',
+        '--print', 'duration: %(duration)s',
         '--no-simulate',
         '--quiet'
     ]);
 
-    let count = 0;
-    const metadata = {};
-
     proc.stdout.on('data', async (dataIn) => {
-        const line = dataIn.toString().trim();
+        const lines = dataIn.toString().trim().split('\n');
 
-        switch (count) {
-            case 0:
-                metadata.filename = line;
-                break;
-            case 1:
-                metadata.duration = Number.parseInt(line);
-                break;
+        for (let i in lines) {
+            const line = lines[i];
+
+            if (line.startsWith('filename: ')) {
+                const filename = line.substring('filename: '.length);
+                await db.setSongFilename(info[0].id, filename);
+            }
+
+            if (line.startsWith('duration: ')) {
+                const duration = Number.parseInt(line.substring('duration: '.length));
+                await db.setSongDuration(info[0].id, duration);
+            }
         }
-
-        count++;
     });
 
     proc.on('close', async (code) => {
@@ -63,8 +61,6 @@ router.post('/', async (req, res) => {
             res.status(500).send('Couldn\'t download song.');
             return;
         }
-
-        await db.setSongMetadata(info[0].id, metadata);
 
         res.send('yay :D');
     });
@@ -93,7 +89,14 @@ router.get('/:id/stream', async (req, res) => {
 
     const data = await db.getSongFilename(id);
     const filename = './' + data[0].filename;
-    const stats = statSync(filename);
+    let stats;
+
+    try {
+        stats = statSync(filename);
+    } catch {
+        res.status(500).send('bruh');
+        return;
+    }
 
     res.header('Content-Type', 'audio/webm');
     res.header('Accept-Ranges', 'bytes');

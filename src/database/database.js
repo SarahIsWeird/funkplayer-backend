@@ -35,16 +35,16 @@ const initializeTables = async () => {
 };
 
 const insertArtist = async (name) => {
-    await knex('artists').insert({
+    return knex('artists').insert({
         name: name,
-    });
+    }, ['id']);
 };
 
 const insertSong = async (name, artistId) => {
     return knex('songs').insert({
         name: name,
         artist: artistId,
-    }, [ 'id' ]);
+    }, ['id']);
 };
 
 const deleteSong = async (id) => {
@@ -53,12 +53,19 @@ const deleteSong = async (id) => {
         .del();
 };
 
-const setSongMetadata = async (id, metadata) => {
+const setSongDuration = async (id, duration) => {
     return knex('songs')
         .where('id', id)
         .update({
-            duration: metadata.duration,
-            filename: metadata.filename,
+            duration: duration
+        });
+};
+
+const setSongFilename = async (id, filename) => {
+    return knex('songs')
+        .where('id', id)
+        .update({
+            filename: filename,
         });
 };
 
@@ -92,7 +99,8 @@ module.exports = {
     insertArtist,
     insertSong,
     deleteSong,
-    setSongMetadata,
+    setSongDuration,
+    setSongFilename,
     getSongFilename,
     getAllArtists,
     getArtistByName,
