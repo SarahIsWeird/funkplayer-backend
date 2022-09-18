@@ -1,8 +1,21 @@
 const { spawn } = require('child_process');
 const db = require('../database/database');
 const express = require('express');
-const { statSync, createReadStream } = require('fs');
+const { statSync, createReadStream, exists, mkdir } = require('fs');
 const logger = require('pino')();
+
+exists('data/', (exists) => {
+    if (exists) return;
+
+    mkdir('data/', (error) => {
+        if (!error) {
+            logger.info('Created directory \'data/\'.');
+            return;
+        }
+
+        logger.error(error, 'Couldn\'t create directory \'data\'');
+    });
+});
 
 const router = express.Router();
 
