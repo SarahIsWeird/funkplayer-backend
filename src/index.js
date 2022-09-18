@@ -1,3 +1,9 @@
+const dotenv = require('dotenv');
+
+dotenv.config({
+    path: process.env.MODE === "prod" ? ".env.production" : ".env.development",
+});
+
 const cors = require('cors');
 const express = require('express');
 const logger = require('pino')();
@@ -8,7 +14,7 @@ const routes = {
 };
 
 const app = express();
-const port = 8081;
+const port = Number.parseInt(process.env.PORT);
 
 app.use(cors());
 app.use(express.json());

@@ -2,11 +2,11 @@ const logger = require('pino')();
 const knex = require('knex')({
     client: 'pg',
     connection: {
-        host: '127.0.0.1',
-        port: 5432,
-        user: 'funkyboi',
-        password: 'uptown funk',
-        database: 'funkplayer',
+        host: process.env.DB_HOST,
+        port: Number.parseInt(process.env.DB_PORT),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
     },
 });
 
